@@ -15,5 +15,6 @@
 #define TFT_CS 15
 #define TFT_RST 27
 #define LCD_Switch 2
+#define PanicButton 26
 
 #define SPIspeed 40000000L

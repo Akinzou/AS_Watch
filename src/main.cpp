@@ -10,6 +10,10 @@ Adafruit_BME280 bme;
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
 int hall, temp, pressure, humidity, altidute;
 int SEALEVELPRESSURE_HPA = 1013;
+int lastState = LOW;
+int currentState;
+int pressedTime  = 0;
+int releasedTime = 0;
 
 void ActualizeSensors(void * parameter)
 {
@@ -23,14 +27,49 @@ void ActualizeSensors(void * parameter)
   }
 }
 
+void CheckButton(void * parameter)
+{
+  for(;;){
+    currentState = digitalRead(PanicButton);
+    if(lastState == HIGH && currentState == LOW)
+    {
+      pressedTime = millis();
+    }
+    else if(lastState == LOW && currentState == HIGH)
+    {
+      releasedTime = millis();
+      int pressDuration = releasedTime - pressedTime;
+      Serial.println(pressDuration);
+        if( pressDuration >= 3000 && pressDuration <= 4000 )
+        {
+          
+        }
+    }
+    lastState = currentState;
+    vTaskDelay(250 / portTICK_PERIOD_MS);
+  }
+}
+
 void setup() {
   Serial.begin(9600);
+  Serial.println("WakeUp");
   bme.begin();
+  pinMode(PanicButton, INPUT);
   pinMode(LCD_Switch, OUTPUT);
   digitalWrite(LCD_Switch, HIGH);
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setRotation(3);
+
+  xTaskCreate
+  (
+  CheckButton,    // Function that should be called
+  "CheckButton",   // Name of the task (for debugging)
+  700,            // Stack size (bytes)
+  NULL,            // Parameter to pass
+  2,               // Task priority
+  NULL             // Task handle
+  );
 
   xTaskCreate
   (
@@ -41,14 +80,12 @@ void setup() {
   1,               // Task priority
   NULL             // Task handle
   );
+
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_26, 0);
+  
 }
 
 void loop() {
-  Serial.println(temp);
-  Serial.println(pressure);
-  Serial.println(humidity);
-  Serial.print(altidute);
-  Serial.println("mpn");
   tft.fillRect(0, 0, 60, 17, ILI9341_BLACK);         //Hall
   tft.fillRect(70, 40, 180, 55, ILI9341_BLACK);      //Hour
   tft.fillRect(270, 0, 320, 17, ILI9341_BLACK);      //battery %
