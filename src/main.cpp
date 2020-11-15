@@ -16,7 +16,7 @@ int lastState = LOW;
 int currentState;
 int pressedTime  = 0;
 int releasedTime = 0;
-
+float voltage;
 
 void ActualizeSensors(void * parameter)
 {
@@ -92,7 +92,8 @@ void setup() {
 }
 
 void loop() {
-
+  Serial.print("Napiecie: ");
+  voltage = bat.getInstantaneousVoltage();
   Serial.println(voltage);
   Serial.println(temp);
   Serial.println(soc);
