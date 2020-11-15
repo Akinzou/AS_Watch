@@ -42,7 +42,8 @@ void CheckButton(void * parameter)
       Serial.println(pressDuration);
         if( pressDuration >= 3000 && pressDuration <= 4000 )
         {
-          
+          Serial.println("Go to deep sleep");
+          esp_deep_sleep_start();
         }
     }
     lastState = currentState;
