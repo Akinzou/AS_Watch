@@ -31,6 +31,7 @@ void ActualizeSensors(void * parameter)
   }
 }
 
+
 void CheckButton(void * parameter)
 {
   for(;;){
@@ -62,42 +63,42 @@ void setup() {
   bme.begin();
   pinMode(PanicButton, INPUT);
   pinMode(LCD_Switch, OUTPUT);
-  //digitalWrite(LCD_Switch, HIGH);
+  digitalWrite(LCD_Switch, HIGH);
   tft.begin();
   tft.fillScreen(ILI9341_BLACK);
   tft.setRotation(3);
 
   xTaskCreate
-  (
-  CheckButton,    // Function that should be called
-  "CheckButton",   // Name of the task (for debugging)
-  1000,            // Stack size (bytes)
-  NULL,            // Parameter to pass
-  2,               // Task priority
-  NULL             // Task handle
-  );
+    (
+    CheckButton,    // Function that should be called
+    "CheckButton",   // Name of the task (for debugging)
+    1200,            // Stack size (bytes)
+    NULL,            // Parameter to pass
+    2,               // Task priority
+    NULL             // Task handle
+    );
 
   xTaskCreate
-  (
-  ActualizeSensors,    // Function that should be called
-  "ActualizeSensors",   // Name of the task (for debugging)
-  2000,            // Stack size (bytes)
-  NULL,            // Parameter to pass
-  1,               // Task priority
-  NULL             // Task handle
-  );
+    (
+    ActualizeSensors,   
+    "ActualizeSensors",   
+    3000,            
+    NULL,            
+    1,               
+    NULL             
+    );
 
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_26, 0);
   
 }
 
 void loop() {
-  Serial.print("Napiecie: ");
+  /*Serial.print("Voltage: ");
   voltage = bat.getInstantaneousVoltage();
   Serial.println(voltage);
   Serial.println(temp);
-  Serial.println(soc);
-  tft.fillRect(0, 0, 60, 17, ILI9341_BLACK);         //Hall
+  Serial.println(soc);*/
+  tft.fillRect(0, 0, 60, 34, ILI9341_BLACK);         //Hall
   tft.fillRect(70, 40, 180, 55, ILI9341_BLACK);      //Hour
   tft.fillRect(270, 0, 320, 17, ILI9341_BLACK);      //battery %
   tft.fillRect(230, 220, 320, 240, ILI9341_BLACK);   //Accel
@@ -108,10 +109,22 @@ void loop() {
   tft.setTextSize(6);
   tft.println("14:10"); 
 
-  tft.setTextSize(2);         //Battery %
-  tft.setCursor(270, 0);
-  tft.print(soc);
-  tft.println("%");
+  if(soc == 100)
+  {
+    tft.setTextSize(2);         //Battery %
+    tft.setCursor(270, 0);
+    tft.print(soc);
+    tft.println("%");
+  }
+
+  else
+  {
+    tft.setTextSize(2);
+    tft.setCursor(280, 0);
+    tft.print(soc);
+    tft.println("%");
+  }
+  
 
   tft.setTextSize(2);
   tft.setCursor(230, 225);    //Accel
@@ -148,5 +161,5 @@ void loop() {
   tft.println("%");
   
 
-  delay(300);
+  delay(500);
 }
