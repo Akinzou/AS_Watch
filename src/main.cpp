@@ -4,6 +4,7 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
 #include "AS_WatchV1.h"
+#include "SettingsIcon.c"
 #include <Adafruit_BME280.h>
 #include <Arduino-MAX17055.h>
 #include <Adafruit_SPIFlash.h> 
@@ -134,7 +135,7 @@ void loop()
     tft.print(soc);
     tft.println("%");
   }
-  
+  tft.drawRGBBitmap(0, 0, SettingsIcon, 30, 30);
 
   tft.setTextSize(2);
   tft.setCursor(230, 225);    //Accel
