@@ -6,11 +6,15 @@
 #include "AS_WatchV1.h"
 #include <Adafruit_BME280.h>
 #include <Arduino-MAX17055.h>
+#include <Adafruit_SPIFlash.h> 
+#include <Adafruit_ImageReader.h>
 
 MAX17055 bat;
 Adafruit_BME280 bme;
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_RST);
-int hall, temp, pressure, humidity, altidute, soc, pressDuration;
+
+
+int hall, temp, pressure, humidity, altidute, soc, pressDuration, ChProcessStat;
 int SEALEVELPRESSURE_HPA = 1013;
 int lastState = LOW;
 int currentState;
@@ -52,15 +56,19 @@ void CheckButton(void * parameter)
         }
     }
     lastState = currentState;
-    vTaskDelay(250 / portTICK_PERIOD_MS);
+    vTaskDelay(200 / portTICK_PERIOD_MS);
   }
 }
 
-void setup() {
+void setup() 
+{
   bat.setCapacity(1200);
+  bat.setResistSensor(0.01);
+
   Serial.begin(9600);
   Serial.println("WakeUp");
   bme.begin();
+  pinMode(ChProcess, INPUT);
   pinMode(PanicButton, INPUT);
   pinMode(LCD_Switch, OUTPUT);
   digitalWrite(LCD_Switch, HIGH);
@@ -72,7 +80,7 @@ void setup() {
     (
     CheckButton,    // Function that should be called
     "CheckButton",   // Name of the task (for debugging)
-    1200,            // Stack size (bytes)
+    1500,            // Stack size (bytes)
     NULL,            // Parameter to pass
     2,               // Task priority
     NULL             // Task handle
@@ -92,17 +100,19 @@ void setup() {
   
 }
 
-void loop() {
-  /*Serial.print("Voltage: ");
+void loop() 
+{
+  Serial.print("Voltage: ");
   voltage = bat.getInstantaneousVoltage();
   Serial.println(voltage);
   Serial.println(temp);
-  Serial.println(soc);*/
+  Serial.println(soc);
+
   tft.fillRect(0, 0, 60, 34, ILI9341_BLACK);         //Hall
   tft.fillRect(70, 40, 180, 55, ILI9341_BLACK);      //Hour
-  tft.fillRect(270, 0, 320, 17, ILI9341_BLACK);      //battery %
+  tft.fillRect(250, 0, 320, 17, ILI9341_BLACK);      //battery %
   tft.fillRect(230, 220, 320, 240, ILI9341_BLACK);   //Accel
-  tft.fillRect(0, 130, 135, 230, ILI9341_BLACK);     //heigh & temp & pressure & humidity
+  tft.fillRect(0, 180, 140, 230, ILI9341_BLACK);     //heigh & temp & pressure & humidity
 
 
   tft.setCursor(70, 45);      //Hour
@@ -131,34 +141,40 @@ void loop() {
   tft.print("16");
   tft.println("m/s^2");
 
-  tft.setTextSize(2);         //Hall
+  /*tft.setTextSize(2);         //Hall
   tft.setCursor(0, 0);
   tft.print(hall);
   tft.setTextSize(1);
-  tft.println("*");
+  tft.println("*");*/
 
   tft.setTextSize(2);        //altidute
-  tft.setCursor(0, 135); 
+  tft.setCursor(0, 195); 
   tft.print(altidute);
   tft.println("m a.s.l");
 
-  tft.setTextSize(2);        //Temp
+  /*tft.setTextSize(2);        //Temp
   tft.setCursor(0, 165); 
   tft.print(temp);
   tft.setTextSize(1);
   tft.print("*");
   tft.setTextSize(2);
-  tft.println("C");
+  tft.println("C");*/
 
   tft.setTextSize(2);        //Pressure
-  tft.setCursor(0, 195); 
+  tft.setCursor(0, 225);
   tft.print(pressure/100);
   tft.println("hPa");
 
-  tft.setTextSize(2);        //Humidity
-  tft.setCursor(0, 225); 
+  /*tft.setTextSize(2);        //Humidity
+  tft.setCursor(0, 135); 
   tft.print(humidity);
-  tft.println("%");
+  tft.println("%");*/
+
+
+  if(!digitalRead(ChProcess)) //External green dot signaling the charging process 
+  {
+    tft.fillCircle(260, 5, 5, ILI9341_GREEN);
+  }
   
 
   delay(500);
